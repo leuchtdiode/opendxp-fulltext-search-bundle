@@ -1,0 +1,22 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  Try2catch\OpenDxp\FulltextSearchBundle\:
+    resource: '../src/'
+    exclude:
+      - '../src/DependencyInjection/'
+      - '../src/OpenDxpFulltextSearchBundle.php'
+
+  Try2catch\OpenDxp\FulltextSearchBundle\Indexer:
+    tags:
+      - { name: 'fulltext_search.indexer' }
+
+  Try2catch\OpenDxp\FulltextSearchBundle\Searcher:
+    tags:
+      - { name: 'fulltext_search.searcher' }
+
+  _instanceof:
+    Try2catch\OpenDxp\FulltextSearchBundle\DocumentProviderInterface:
+      tags: [ 'fulltext_search.document_provider' ]
