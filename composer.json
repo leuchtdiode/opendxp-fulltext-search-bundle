@@ -1,5 +1,5 @@
 {
-	"name": "opendxp/fulltext-search-bundle",
+	"name": "leuchtdiode/opendxp-fulltext-search-bundle",
 	"description": "OpenDxp Fulltext Search Bundle",
 	"type": "symfony-bundle",
 	"license": "MIT",
