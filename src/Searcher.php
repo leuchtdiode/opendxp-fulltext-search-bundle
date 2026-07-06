@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Try2catch\OpenDxp\FulltextSearchBundle;
 
 use PDO;
+use Try2catch\OpenDxp\FulltextSearchBundle\Model\SearchResultItem;
 
 class Searcher
 {
@@ -28,7 +29,16 @@ class Searcher
 		$stmt = $db->prepare("SELECT id, url, title, description, payload FROM documents WHERE content MATCH ?");
 		$stmt->execute([ $keyword ]);
 
-		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+		return array_map(
+			fn(array $data) => new SearchResultItem(
+				id: $data['id'],
+				url: $data['url'],
+				title: $data['title'] ?? '',
+				description: $data['description'] ?? '',
+				payload: $data['payload'] ?? null,
+			),
+			$stmt->fetchAll(PDO::FETCH_ASSOC)
+		);
 	}
 
 	private function escapeFtsQuery(string $keyword): string
