@@ -26,8 +26,19 @@ class Searcher
 			return [];
 		}
 
-		$stmt = $db->prepare("SELECT id, url, title, description, payload FROM documents WHERE content MATCH ?");
-		$stmt->execute([ $keyword ]);
+		$stmt = $db->prepare(<<<SQL
+		SELECT id, url, title, description, payload
+		FROM documents
+		WHERE content MATCH ?
+		ORDER BY bm25(documents) ASC
+		LIMIT ?
+		OFFSET ?
+		SQL);
+		$stmt->execute([
+			$keyword,
+			$searchParams->getLimit() ?? 10,
+			$searchParams->getOffset() ?? 0,
+		]);
 
 		return array_map(
 			fn(array $data) => new SearchResultItem(
@@ -54,7 +65,7 @@ class Searcher
 			}
 
 			// 2. Escape existing double quotes by doubling them
-			$sanitizedWord = str_replace('"', '', $word);
+			$sanitizedWord = str_replace('"', '""', $word);
 
 			$escapedWords[] = '"' . $sanitizedWord . '"';
 		}

@@ -94,7 +94,7 @@ class IntegrationTest extends TestCase
 		else
 		{
 			$this->assertCount(1, $results);
-			$this->assertEquals($expectedId, $results[0]['id']);
+			$this->assertEquals($expectedId, $results[0]->getId());
 		}
 
 		// Cleanup
