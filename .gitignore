@@ -3,3 +3,5 @@
 composer.lock
 *.iml
 vendor
+phpunit.xml.dist
+.phpunit.result.cache
