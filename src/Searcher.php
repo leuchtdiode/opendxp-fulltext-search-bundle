@@ -31,7 +31,7 @@ class Searcher
 		SELECT id, url, title, description, payload
 		FROM documents
 		WHERE content MATCH ?
-		ORDER BY bm25(documents) ASC, id ASC
+		ORDER BY bm25(documents) ASC, id DESC
 		LIMIT ?
 		OFFSET ?
 		SQL
