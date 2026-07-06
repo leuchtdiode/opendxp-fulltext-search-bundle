@@ -4,17 +4,18 @@ declare(strict_types=1);
 namespace Try2catch\OpenDxp\FulltextSearchBundle;
 
 use PDO;
+use Try2catch\OpenDxp\FulltextSearchBundle\Model\SearchResult;
 use Try2catch\OpenDxp\FulltextSearchBundle\Model\SearchResultItem;
 
 class Searcher
 {
-	public function search(SearchParams $searchParams): array
+	public function search(SearchParams $searchParams): SearchResult
 	{
 		$dbPath = DbPath::get($searchParams->getCollection());
 
 		if (!file_exists($dbPath))
 		{
-			return [];
+			return new SearchResult([], 0);
 		}
 
 		$db = new PDO('sqlite:' . $dbPath);
@@ -23,7 +24,7 @@ class Searcher
 
 		if (empty($keyword))
 		{
-			return [];
+			return new SearchResult([], 0);
 		}
 
 		$stmt = $db->prepare(<<<SQL
@@ -33,23 +34,39 @@ class Searcher
 		ORDER BY bm25(documents) ASC
 		LIMIT ?
 		OFFSET ?
-		SQL);
+		SQL
+		);
 		$stmt->execute([
 			$keyword,
 			$searchParams->getLimit() ?? 10,
 			$searchParams->getOffset() ?? 0,
 		]);
 
-		return array_map(
-			fn(array $data) => new SearchResultItem(
+		$stmtCount = $db->prepare(<<<SQL
+		SELECT COUNT(*)
+		FROM documents
+		WHERE content MATCH ?
+		SQL
+		);
+		$stmtCount->execute([$keyword]);
+		$totalCount = (int) $stmtCount->fetchColumn();
+
+		$items = [];
+
+		$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+		foreach ($results as $data)
+		{
+			$items[] = new SearchResultItem(
 				id: $data['id'],
 				url: $data['url'],
 				title: $data['title'] ?? '',
 				description: $data['description'] ?? '',
 				payload: $data['payload'] ?? null,
-			),
-			$stmt->fetchAll(PDO::FETCH_ASSOC)
-		);
+			);
+		}
+
+		return new SearchResult($items, $totalCount);
 	}
 
 	private function escapeFtsQuery(string $keyword): string

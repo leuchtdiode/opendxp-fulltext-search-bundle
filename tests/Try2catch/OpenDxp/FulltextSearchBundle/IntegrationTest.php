@@ -81,7 +81,7 @@ class IntegrationTest extends TestCase
 
 		// 2. Searching
 		$searcher = new Searcher();
-		$results  = $searcher->search(
+		$result   = $searcher->search(
 			SearchParams::create()
 				->setCollection($collection)
 				->setKeyword($keyword)
@@ -89,12 +89,14 @@ class IntegrationTest extends TestCase
 
 		if ($expectedId === null)
 		{
-			$this->assertCount(0, $results);
+			$this->assertCount(0, $result->getItems());
+			$this->assertEquals(0, $result->getTotalCount());
 		}
 		else
 		{
-			$this->assertCount(1, $results);
-			$this->assertEquals($expectedId, $results[0]->getId());
+			$this->assertCount(1, $result->getItems());
+			$this->assertEquals(1, $result->getTotalCount());
+			$this->assertEquals($expectedId, $result->getItems()[0]->getId());
 		}
 
 		// Cleanup
